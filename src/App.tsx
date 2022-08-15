@@ -1,25 +1,68 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useEffect, useState} from 'react';
+import * as C from './App.styles';
+
+import {Item} from  './types/item'
+import ListItem from './components/ListItem/ListItem'
+import AddArea from './components/AddArea/AddArea';
+
 
 function App() {
+
+  const getLocal = () => JSON.parse(localStorage.getItem('db_task') || '[]') ?? []
+  const setLocal = (db_task: Item[]) => localStorage.setItem('db_task', JSON.stringify(db_task))
+  const db = getLocal()
+
+
+  const [list, setList] = useState<Item[]>(db)
+
+  useEffect(() => {
+    let db = getLocal()
+    db = list
+    setLocal(db)
+  }, [])
+
+  const handleAddTask = (taskName: string) => {
+    let db = getLocal()
+
+    let newList = [...list]
+    newList.push({
+      id: list.length + 1,
+      name: taskName,
+      done: false
+    })
+
+    db = newList
+    setLocal(db)
+    setList(newList)
+  }
+
+  const handleDeleteItem = (id: number) => {
+      let newList = list.filter((item) => item.id !== id)
+      let db = getLocal()
+      db = newList
+      setLocal(db)
+      setList(newList) 
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <C.Container>
+        <C.Area>
+          <C.Header>Lista de Tarefas</C.Header>
+
+          <AddArea onEnter={handleAddTask} />
+
+          {list.map((item: Item, index: number) => (
+            <ListItem 
+            key={index} 
+            item={item} 
+            handleDeleteItem={handleDeleteItem}
+            list={list}
+            getLocal={getLocal}
+            setLocal={setLocal} />
+          ))}
+
+        </C.Area>
+      </C.Container>
   );
 }
 
